@@ -1,0 +1,379 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Administracion de Personal</h2>
+<link href="~/Content/bootstrap.css" rel="stylesheet" />
+
+
+    <a href="#" class="btn btn-outline-dark" id="lnkAgregar">Agregar</a>
+    
+    <div style="text-align: center">
+        <div id="mensaje"></div>
+        <input type="text" id="txtvalor" name="valor" class="btn btn-outline-dark" style="align-self: center" />
+        <input type="submit" value="Buscar" class="btn btn-outline-dark" id="btnBuscar" />
+
+
+        <br /><br /><br />
+        
+
+        <table class="table table-striped" id="tablaDatos" style="text-align: center">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>A. Paterno</th>
+                    <th>A Materno</th>
+                    <th>Edad</th>
+                    <th>Fecha</th>
+                    <th>Opciones</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody id="info">
+                @*Aqui va la inforacion de la tabla*@
+            </tbody>
+        </table>
+
+        <div id="formulario">
+            <table class="table table-striped">
+                <tr>
+                    <td>Nombre</td>
+                    <td>
+                        <input type="text" class="form-control" id="txtNombre" />
+                        <input type="hidden" name="name" value="" id="txtid" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>A. Paterno</td>
+                    <td><input type="text" class="form-control" id="txtPaterno" /></td>
+                </tr>
+                <tr>
+                    <td>A. Materno</td>
+                    <td><input type="text" class="form-control" id="txtMaterno" /></td>
+                </tr>
+                <tr>
+                    <td>Edad</td>
+                    <td><input type="text" class="form-control" id="txtEdad" /></td>
+                </tr>
+                <tr>
+                    <td><button id="btnCancelar" class="btn btn-outline-secondary">Cancelar</button></td>
+                    <td>
+                        <input type="button" id="btnAgregar" value="Agregar" class="btn btn-outline-success" />
+                        <input type="button" id="btnEliminar" value="Eliminar" class="btn btn-outline-danger" />
+                        <input type="button" id="btnEditar" value="Editar" class="btn btn-outline-primary" />
+                    </td>
+                </tr>
+
+            </table>
+        </div>
+
+        <script src="~/Scripts/jquery-1.10.2.min.js"></script>
+        <script src="~/Scripts/bootstrap.min.js"></script>
+    </div>
+
+<script>
+
+    $(document).ready(function () {
+                
+        $("#tablaDatos").show();
+        $("#formulario").hide();
+
+        obtenerinfo();
+    });
+
+    $("#lnkAgregar").click(function () {
+
+        $("#tablaDatos").hide();
+        $("#formulario").show();
+        $("#lnkAgregar").hide();
+        $("#btnEliminar").hide();
+        $("#btnEditar").hide();
+    });    
+
+    $("#btnCancelar").click(function () {
+
+        OcultarForm()
+    });   
+
+    function OcultarForm() {
+        //limpiar cajas de texto
+        //Mostrar link de Agregar
+
+        $("#tablaDatos").show();
+        $("#formulario").hide();
+        $("#lnkAgregar").show();
+
+        $("#txtNombre").val("");
+        $("#txtPaterno").val("");
+        $("#txtMaterno").val("");
+        $("#txtEdad").val("");
+
+        $("#txtNombre").prop("readOnly", false);
+        $("#txtPaterno").prop("readOnly", false);
+        $("#txtMaterno").prop("readOnly", false);
+        $("#txtEdad").prop("readOnly", false);
+
+        $("#btnAgregar").show();
+        $("#btnEliminar").hide();
+    }
+
+    function Mostrarform() {
+
+        $("#tablaDatos").hide();
+        $("#formulario").show();
+        $("#lnkAgregar").hide();
+
+        $("#txtNombre").val("");
+        $("#txtPaterno").val("");
+        $("#txtMaterno").val("");
+        $("#txtEdad").val("");
+
+        $("#txtid").val("");
+    }
+
+    $("#btnAgregar").click(function () {
+
+        var personas = {
+            Nombre: $("#txtNombre").val(),
+            Paterno: $("#txtPaterno").val(),
+            Materno: $("#txtMaterno").val(),
+            Edad: $("#txtEdad").val(),
+        };
+
+        $.ajax({
+            type: "post",
+            url: "/Home/Agregar",
+            contentType: "application/json; charset= utf-8",
+            dataType: "JSON",
+            data: JSON.stringify(personas),
+            success: function (respuesta) {
+                if (respuesta.mensaje == "ok") {
+
+                    $("#mensaje").html('<br /><div class="alert alert-success">Se agrego correctamente a ' + $("#txtNombre").val() + '</div>')
+                    setTimeout(function () {
+                        $('#mensaje').fadeOut();
+                    },3000);
+
+                    obtenerinfo();
+                    OcultarForm();
+
+                    
+                }
+            },
+            error: function (objXMLHttpRequest) {
+                alert(objXMLHttpRequest);
+            }
+        });
+    });
+
+    function obtenerinfo() {
+        jQuery.ajax({
+            type: 'Get',
+            url: '/Home/Obtener',
+            contentType: 'aplication/json; charset = utf-8',
+            success: function(respuesta) {
+                if (respuesta.mensaje == 'ok') {
+                    llenartabla(respuesta.ls)
+                }
+                else
+                {
+                    alert(respuesta.mensaje);
+                }
+            },
+            error: function (objXMLHttpRequest) {
+                alert(objXMLHttpRequest);
+            }
+        });
+    }
+
+    function llenartabla(infotabla) {
+        debugger;
+        var f = '';
+        $.each(infotabla, function(i, element) {
+            f += '<tr>';
+
+            f += '<td>';
+            f += element.Nombre;
+            f += '</td>';
+
+            f += '<td>';
+            f += element.Paterno;
+            f += '</td>';
+
+            f += '<td>';
+            f += element.Materno;
+            f += '</td>';
+
+            f += '<td>';
+            f += element.Edad;
+            f += '</td>';
+
+            f += '<td>';
+            f += element.fecha;
+            f += '</td>';
+
+            f += '<td>';
+            f += '<a href="#" class="btn btn-outline-danger" onclick="lnkEliminar(' + element.id + ')">Eliminar</a>    ';
+            f += '  <a href="#" class="btn btn-outline-primary" onclick="lnkEditar(' + element.id + ')">Editar</a>';
+            f += '</td>';
+            
+            f += '</tr>';
+        })
+
+        $("#info").empty();
+        $("#info").html(f);
+    }
+
+    function lnkEliminar(id) {
+
+        jQuery.ajax({
+            type: 'Get',
+            url: '/Home/Obtenerid/'+id,
+            contentType: 'aplication/json; charset = utf-8',
+            success: function (respuesta) {
+                if (respuesta.mensaje == 'ok') {
+
+                    Mostrarform()
+
+                    //se asignan valores a las cajas de texto
+                    $("#txtNombre").val(respuesta.pid.Nombre);
+                    $("#txtPaterno").val(respuesta.pid.Paterno);
+                    $("#txtMaterno").val(respuesta.pid.Materno);
+                    $("#txtEdad").val(respuesta.pid.Edad);
+
+                    $("#txtid").val(respuesta.pid.id);
+
+                    //poner las cajas de texto en read only
+                    $("#txtNombre").prop("readOnly", true);
+                    $("#txtPaterno").prop("readOnly", true);
+                    $("#txtMaterno").prop("readOnly", true);
+                    $("#txtEdad").prop("readOnly", true);
+
+                    $("#btnAgregar").hide();
+                    $("#btnEliminar").show();
+                    $("#btnEditar").hide();
+                }
+                else {
+                    alert(respuesta.mensaje);
+                }
+            },
+            error: function (objXMLHttpRequest) {
+                alert(objXMLHttpRequest);
+            }
+        });
+    }
+
+    $("#btnEliminar").click(function () {
+                           
+        $.ajax({
+            type: "post",
+            url: "/Home/Eliminar/"+$("#txtid").val(),
+            contentType: "application/json; charset= utf-8",
+            success: function (respuesta) {
+                if (respuesta.mensaje == "ok") {
+
+                    obtenerinfo();
+                    OcultarForm();
+                }
+            },
+            error: function (objXMLHttpRequest) {
+                alert(objXMLHttpRequest);
+            }
+        });
+    });
+
+    function lnkEditar(id) {
+        /*alert(id);*/
+        jQuery.ajax({
+            type: 'Get',
+            url: '/Home/Obtenerid/' + id,
+            contentType: 'aplication/json; charset = utf-8',
+            success: function (respuesta) {
+                if (respuesta.mensaje == 'ok') {
+
+                    Mostrarform()
+
+                    //se asignan valores a las cajas de texto
+                    $("#txtNombre").val(respuesta.pid.Nombre);
+                    $("#txtPaterno").val(respuesta.pid.Paterno);
+                    $("#txtMaterno").val(respuesta.pid.Materno);
+                    $("#txtEdad").val(respuesta.pid.Edad);
+
+                    $("#txtid").val(respuesta.pid.id);
+
+                    //poner las cajas de texto en read only
+                    $("#txtNombre").prop("readOnly", false);
+                    $("#txtPaterno").prop("readOnly", false);
+                    $("#txtMaterno").prop("readOnly", false);
+                    $("#txtEdad").prop("readOnly", false);
+
+                    $("#btnAgregar").hide();
+                    $("#btnEliminar").hide();
+                    $("#btnEditar").show();
+
+                }
+                else {
+                    alert(respuesta.mensaje);
+                }
+            },
+            error: function (objXMLHttpRequest) {
+                alert(objXMLHttpRequest);
+            }
+        });
+    }
+
+    $("#btnEditar").click(function () {
+
+        var personas = {
+            Nombre: $("#txtNombre").val(),
+            Paterno: $("#txtPaterno").val(),
+            Materno: $("#txtMaterno").val(),
+            Edad: $("#txtEdad").val(),
+        };
+
+        $.ajax({
+            type: "post",
+            url: "/Home/Editar/" + $("#txtid").val(),
+            contentType: "application/json; charset= utf-8",
+            dataType: "JSON",
+            data: JSON.stringify(personas),
+            success: function (respuesta) {
+                if (respuesta.mensaje == "ok") {
+
+                    obtenerinfo();
+                    OcultarForm();
+                }
+            },
+            error: function (objXMLHttpRequest) {
+                alert(objXMLHttpRequest);
+            }
+        });
+    });
+
+    $("#btnBuscar").click(function () {
+        /*alert($("#txtvalor").val());*/
+        var p = {
+            valor: $("#txtvalor").val(),
+        };
+        $.ajax({
+            type: 'post',
+            url: '/Home/Buscar',
+            contentType: "application/json; charset= utf-8",
+            dataType: "JSON",
+            data: JSON.stringify(p),
+            success: function (respuesta) {
+                if (respuesta.mensaje == 'ok') {
+                    llenartabla(respuesta.sear);
+                    $("#txtvalor").val();
+                }
+                else {
+                    alert(respuesta.mensaje);
+                }
+            },
+            error: function (objXMLHttpRequest) {
+                alert(objXMLHttpRequest);
+            }
+        });
+    });
+</script>
